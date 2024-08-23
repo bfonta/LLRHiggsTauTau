@@ -11,17 +11,17 @@ import re
 YEAR = 2016
 assert YEAR in (2016, 2017, 2018)
 
-PERIOD = '' # 'APV' # can be left empty if running on 2017 and 2018
+PERIOD = "" # 'postVFP' # can be left empty if running on 2017 and 2018
 assert PERIOD in ("", "postVFP")
 
 PREFIX = "MC"
 assert PREFIX in ("Sig", "MC", "Data")
 TAG = "April2024"
 
-era = "APV" if PERIOD=="" else ""
-datasetsFile = "datasets_UL" + str(YEAR[-2:]) + era + ".txt"
+period16 = "APV" if (PERIOD=="" and YEAR==2016) else ""
+datasetsFile = "datasets_UL" + str(YEAR[-2:]) + period16 + ".txt"
 nolocFile = "datasets_UL" + str(YEAR[-2:]) + ".noloc.txt"
-tag = PREFIX + "_UL" + str(YEAR[-2:]) + era + "_" + TAG
+tag = PREFIX + "_UL" + str(YEAR[-2:]) + period16 + "_" + TAG
 
 if YEAR == 2016:
     lumiMaskFileName = '/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions16/13TeV/Legacy_2016/Cert_271036-284044_13TeV_Legacy2016_Collisions16_JSON.txt'
@@ -36,34 +36,34 @@ elif YEAR == 2018:
 isMC = True if PREFIX in ("Sig", "MC") else False 
 
 PROCESS = [
-    "BACKGROUNDS_TT_" + str(YEAR) + era,
-    "BACKGROUNDS_WJETS_" + str(YEAR) + era,
-    "BACKGROUNDS_DY_NLO_" + str(YEAR) + era,
-    #"BACKGROUNDS_DY_NLO_PTSLICED_" + str(YEAR) + era,
-    "BACKGROUNDS_DY_" + str(YEAR) + era,
-    "BACKGROUNDS_VV_" + str(YEAR) + era,
-    "BACKGROUNDS_VVV_" + str(YEAR) + era,
-    "BACKGROUNDS_ST_" + str(YEAR) + era,
-    "BACKGROUNDS_EWK_" + str(YEAR) + era,
-    "BACKGROUNDS_H_" + str(YEAR) + era,
-    "BACKGROUNDS_TTX_" + str(YEAR) + era,
-    "BACKGROUNDS_TTVH_" + str(YEAR) + era,
-    #"BACKGROUNDS_DY_QQ_HTSLICED_" + str(YEAR) + era
-    "BACKGROUNDS_HH_" + str(YEAR) + era
-    # "BACKGROUNDS_DY_LM_" + str(YEAR) + era
+    "BACKGROUNDS_TT_" + str(YEAR) + period16,
+    "BACKGROUNDS_WJETS_" + str(YEAR) + period16,
+    "BACKGROUNDS_DY_NLO_" + str(YEAR) + period16,
+    #"BACKGROUNDS_DY_NLO_PTSLICED_" + str(YEAR) + period16,
+    "BACKGROUNDS_DY_" + str(YEAR) + period16,
+    "BACKGROUNDS_VV_" + str(YEAR) + period16,
+    "BACKGROUNDS_VVV_" + str(YEAR) + period16,
+    "BACKGROUNDS_ST_" + str(YEAR) + period16,
+    "BACKGROUNDS_EWK_" + str(YEAR) + period16,
+    "BACKGROUNDS_H_" + str(YEAR) + period16,
+    "BACKGROUNDS_TTX_" + str(YEAR) + period16,
+    "BACKGROUNDS_TTVH_" + str(YEAR) + period16,
+    #"BACKGROUNDS_DY_QQ_HTSLICED_" + str(YEAR) + period16
+    "BACKGROUNDS_HH_" + str(YEAR) + period16
+    # "BACKGROUNDS_DY_LM_" + str(YEAR) + period16
 
-    # "SIGNALS_GF_SPIN0_" + str(YEAR) + era,
-    # "SIGNALS_GF_SPIN2_" + str(YEAR) + era,
-    # "SIGNALS_HY_" + str(YEAR) + era,
+    # "SIGNALS_GF_SPIN0_" + str(YEAR) + period16,
+    # "SIGNALS_GF_SPIN2_" + str(YEAR) + period16,
+    # "SIGNALS_HY_" + str(YEAR) + period16,
 ]
 
 if not isMC:
     PROCESS = [
-        "DATA_TAU_" + str(YEAR) + era,
-        "DATA_ELE_" + str(YEAR) + era,
-        "DATA_MU_" + str(YEAR) + era,
-        "DATA_MET_" + str(YEAR) + era,
-        "DATA_DOUBLEMU_" + str(YEAR) + era
+        "DATA_TAU_" + str(YEAR) + period16,
+        "DATA_ELE_" + str(YEAR) + period16,
+        "DATA_MU_" + str(YEAR) + period16,
+        "DATA_MET_" + str(YEAR) + period16,
+        "DATA_DOUBLEMU_" + str(YEAR) + period16
     ]
 
 FastJobs = False # controls number of jobs - true if skipping SVfit, false if computing it (jobs will be smaller)
