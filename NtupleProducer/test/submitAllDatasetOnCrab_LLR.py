@@ -182,7 +182,7 @@ for dtset in dtsetToLaunch:
                         " General.requestName=%s" % (shortName + "_" + str(counter)),
                         " General.workArea=%s" % crabJobsFolder,
                         " Data.inputDataset=%s" % dtset,
-                        " Data.outLFNDirBase=/store/user/bfontana/HHNtuples_res/UL" + str(YEAR) + "/%s/%s" % (tag, str(counter)+"_"+dtsetNames),
+                        " Data.outLFNDirBase=/store/user/bfontana/HHNtuples_res/UL" + str(YEAR) + period16 + "/%s/%s" % (tag, str(counter)+"_"+dtsetNames),
                         " Data.outputDatasetTag=%s" % (shortName + "_" + tag + "_" + str(counter)),
                         " Data.splitting='Automatic'",
                         " Data.splitting='FileBased'",
