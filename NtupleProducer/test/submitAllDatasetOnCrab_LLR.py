@@ -8,8 +8,8 @@ import re
 ###################################################################
 #### Parameters to be changed for each production
 
-YEAR = "2016"
-assert YEAR in ("2016", "2017", "2018")
+YEAR = 2016
+assert YEAR in (2016, 2017, 2018)
 
 PERIOD = '' # 'APV' # can be left empty if running on 2017 and 2018
 assert PERIOD in ("", "postVFP")
@@ -19,51 +19,51 @@ assert PREFIX in ("Sig", "MC", "Data")
 TAG = "April2024"
 
 era = "APV" if PERIOD=="" else ""
-datasetsFile = "datasets_UL" + YEAR[-2:] + era + ".txt"
-nolocFile = "datasets_UL" + YEAR[-2:] + ".noloc.txt"
-tag = PREFIX + "_UL" + YEAR[-2:] + era + "_" + TAG
+datasetsFile = "datasets_UL" + str(YEAR[-2:]) + era + ".txt"
+nolocFile = "datasets_UL" + str(YEAR[-2:]) + ".noloc.txt"
+tag = PREFIX + "_UL" + str(YEAR[-2:]) + era + "_" + TAG
 
-if YEAR == "2016":
+if YEAR == 2016:
     lumiMaskFileName = '/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions16/13TeV/Legacy_2016/Cert_271036-284044_13TeV_Legacy2016_Collisions16_JSON.txt'
 
-elif YEAR == "2017":
+elif YEAR == 2017:
     lumiMaskFileName = '/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions17/13TeV/Legacy_2017/Cert_294927-306462_13TeV_UL2017_Collisions17_GoldenJSON.txt'
 
-elif YEAR == "2018":
+elif YEAR == 2018:
     lumiMaskFileName = '/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions18/13TeV/Legacy_2018/Cert_314472-325175_13TeV_Legacy2018_Collisions18_JSON.txt'
     
 # /!\ Be sure that the IsMC flag in analyzer_LLR.py matches this one!
 isMC = True if PREFIX in ("Sig", "MC") else False 
 
 PROCESS = [
-    "BACKGROUNDS_TT_" + YEAR + era,
-    "BACKGROUNDS_WJETS_" + YEAR + era,
-    "BACKGROUNDS_DY_NLO_" + YEAR + era,
-    #"BACKGROUNDS_DY_NLO_PTSLICED_" + YEAR + era,
-    "BACKGROUNDS_DY_" + YEAR + era,
-    "BACKGROUNDS_VV_" + YEAR + era,
-    "BACKGROUNDS_VVV_" + YEAR + era,
-    "BACKGROUNDS_ST_" + YEAR + era,
-    "BACKGROUNDS_EWK_" + YEAR + era,
-    "BACKGROUNDS_H_" + YEAR + era,
-    "BACKGROUNDS_TTX_" + YEAR + era,
-    "BACKGROUNDS_TTVH_" + YEAR + era,
-    #"BACKGROUNDS_DY_QQ_HTSLICED_" + YEAR + era
-    "BACKGROUNDS_HH_" + YEAR + era
-    # "BACKGROUNDS_DY_LM_" + YEAR + era
+    "BACKGROUNDS_TT_" + str(YEAR) + era,
+    "BACKGROUNDS_WJETS_" + str(YEAR) + era,
+    "BACKGROUNDS_DY_NLO_" + str(YEAR) + era,
+    #"BACKGROUNDS_DY_NLO_PTSLICED_" + str(YEAR) + era,
+    "BACKGROUNDS_DY_" + str(YEAR) + era,
+    "BACKGROUNDS_VV_" + str(YEAR) + era,
+    "BACKGROUNDS_VVV_" + str(YEAR) + era,
+    "BACKGROUNDS_ST_" + str(YEAR) + era,
+    "BACKGROUNDS_EWK_" + str(YEAR) + era,
+    "BACKGROUNDS_H_" + str(YEAR) + era,
+    "BACKGROUNDS_TTX_" + str(YEAR) + era,
+    "BACKGROUNDS_TTVH_" + str(YEAR) + era,
+    #"BACKGROUNDS_DY_QQ_HTSLICED_" + str(YEAR) + era
+    "BACKGROUNDS_HH_" + str(YEAR) + era
+    # "BACKGROUNDS_DY_LM_" + str(YEAR) + era
 
-    # "SIGNALS_GF_SPIN0_" + YEAR + era,
-    # "SIGNALS_GF_SPIN2_" + YEAR + era,
-    # "SIGNALS_HY_" + YEAR + era,
+    # "SIGNALS_GF_SPIN0_" + str(YEAR) + era,
+    # "SIGNALS_GF_SPIN2_" + str(YEAR) + era,
+    # "SIGNALS_HY_" + str(YEAR) + era,
 ]
 
 if not isMC:
     PROCESS = [
-        "DATA_TAU_" + YEAR + era,
-        "DATA_ELE_" + YEAR + era,
-        "DATA_MU_" + YEAR + era,
-        "DATA_MET_" + YEAR + era,
-        "DATA_DOUBLEMU_" + YEAR + era
+        "DATA_TAU_" + str(YEAR) + era,
+        "DATA_ELE_" + str(YEAR) + era,
+        "DATA_MU_" + str(YEAR) + era,
+        "DATA_MET_" + str(YEAR) + era,
+        "DATA_DOUBLEMU_" + str(YEAR) + era
     ]
 
 FastJobs = False # controls number of jobs - true if skipping SVfit, false if computing it (jobs will be smaller)
@@ -182,7 +182,7 @@ for dtset in dtsetToLaunch:
                         " General.requestName=%s" % (shortName + "_" + str(counter)),
                         " General.workArea=%s" % crabJobsFolder,
                         " Data.inputDataset=%s" % dtset,
-                        " Data.outLFNDirBase=/store/user/bfontana/HHNtuples_res/UL" + YEAR + "/%s/%s" % (tag, str(counter)+"_"+dtsetNames),
+                        " Data.outLFNDirBase=/store/user/bfontana/HHNtuples_res/UL" + str(YEAR) + "/%s/%s" % (tag, str(counter)+"_"+dtsetNames),
                         " Data.outputDatasetTag=%s" % (shortName + "_" + tag + "_" + str(counter)),
                         " Data.splitting='Automatic'",
                         " Data.splitting='FileBased'",

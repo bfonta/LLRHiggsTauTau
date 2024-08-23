@@ -13,7 +13,7 @@ except NameError:
 try: YEAR
 except NameError:
     YEAR = 2018
-assert YEAR in ("2016", "2017", "2018")
+assert YEAR in (2016, 2017, 2018)
 try: PERIOD
 except:
     PERIOD =""
