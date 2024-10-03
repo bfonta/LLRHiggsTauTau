@@ -9,6 +9,12 @@ PyFilePath = os.environ['CMSSW_BASE']+"/src/LLRHiggsTauTau/NtupleProducer/"
 # Year/Period
 YEAR=2016
 IsMC=True
+print('CHECK SYS ARGV')
+print(sys.argv)
+if sys.argv[4] == "uncertaintyScheme":
+    SCHEME = sys.argv[5]
+else:
+    SCHEME = "MadGraph45"
 
 #apply corrections?
 APPLYMUCORR=False

@@ -109,7 +109,7 @@ print " Publish?: "   , PublishDataset
 with open(datasetsFile) as fIn:
 
     for line in fIn:
-        line = line.strip() # remove newline at the end and leding/trailing whitespaces
+        line = line.strip() # remove newline at the end and leading/trailing whitespaces
         
         if not line: #skip empty lines
             continue
@@ -118,13 +118,14 @@ with open(datasetsFile) as fIn:
             continue
 
         words = line.split()
-
+        
         if len(words) >= 3:
             if words[0] == sectionBeginEnd and words[2] == sectionBeginEnd: 
                 currSection = words[1]
         else:
             if currSection in PROCESS:
-                dtsetToLaunch.append(line)
+                assert len(words)==2
+                dtsetToLaunch.append(words)
 
 # CREATE CRAB JOBS
 os.system ("voms-proxy-init -voms cms")
@@ -165,7 +166,8 @@ for dtset in dtsetToLaunch:
 #            ignoreLoc = True
 #            print("ignoring locality for dset: {}".format(dtset))
 
-    dtsetNames = dtset
+    dtsetNames = dtset[0]
+    uncertScheme = dset[1]
     if '/MINIAODSIM' in dtset:
         dtsetNames = dtset.replace('/MINIAODSIM', "")
     elif '/MINIAOD' in dtset:
@@ -179,6 +181,7 @@ for dtset in dtsetToLaunch:
         shortName = shortName[toRemove:]
 
     command = ' '.join(("crab submit -c crab3_template_LLR.py",
+                        " JobType.pyCfgParams=['--uncertaintyScheme', '{}']".format(uncertScheme),
                         " General.requestName=%s" % (shortName + "_" + str(counter)),
                         " General.workArea=%s" % crabJobsFolder,
                         " Data.inputDataset=%s" % dtset,
