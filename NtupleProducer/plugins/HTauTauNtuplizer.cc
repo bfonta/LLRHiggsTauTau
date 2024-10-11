@@ -2066,36 +2066,7 @@ void HTauTauNtuplizer::analyze(const edm::Event& event, const edm::EventSetup& e
 			}) / QCDscale_muF1p0_muR1p0;
 		  
 		  _MC_weight_pdf = 0.;
-		  unsigned _MC_weight_pdf_first_idx = 1609;
-		  float _MC_weight_pdf_first = lheweights[_MC_weight_pdf_first_idx].wgt;
-		  for (unsigned i=_MC_weight_pdf_first_idx+1; i<=_MC_weight_pdf_first_idx+100; ++i) {
-			float prod = lheweights[i].wgt - _MC_weight_pdf_first;
-			_MC_weight_pdf += prod*prod ;
-		  }
-		  _MC_weight_pdf = std::sqrt(_MC_weight_pdf);
-		  
-		  _MC_weight_astrong = (lheweights[_MC_weight_pdf_first_idx+102].wgt-lheweights[_MC_weight_pdf_first_idx+101].wgt) / 2.;
-		}
-	  else if(uncertScheme == "MadGraph45C")
-		{
-		  float QCDscale_muF1p0_muR1p0 = lheweights[0].wgt;
-		  float dev_muF1p0_muR2p0 = QCDscale_muF1p0_muR1p0 - lheweights[5].wgt;
-		  float dev_muF1p0_muR0p5 = QCDscale_muF1p0_muR1p0 - lheweights[10].wgt;
-		  float dev_muF2p0_muR1p0 = QCDscale_muF1p0_muR1p0 - lheweights[15].wgt;
-		  float dev_muF2p0_muR2p0 = QCDscale_muF1p0_muR1p0 - lheweights[20].wgt;
-		  float dev_muF0p5_muR1p0 = QCDscale_muF1p0_muR1p0 - lheweights[30].wgt;
-		  float dev_muF0p5_muR0p5 = QCDscale_muF1p0_muR1p0 - lheweights[40].wgt;
-		  _MC_weight_QCDscale = std::max({
-			  std::fabs(dev_muF1p0_muR2p0),
-			  std::fabs(dev_muF1p0_muR0p5),
-			  std::fabs(dev_muF2p0_muR1p0),
-			  std::fabs(dev_muF2p0_muR2p0),
-			  std::fabs(dev_muF0p5_muR1p0),
-			  std::fabs(dev_muF0p5_muR0p5),
-			}) / QCDscale_muF1p0_muR1p0;
-		  
-		  _MC_weight_pdf = 0.;
-		  unsigned _MC_weight_pdf_first_idx = 16011;
+		  unsigned _MC_weight_pdf_first_idx = 1611;
 		  float _MC_weight_pdf_first = lheweights[_MC_weight_pdf_first_idx].wgt;
 		  for (unsigned i=_MC_weight_pdf_first_idx+1; i<=_MC_weight_pdf_first_idx+100; ++i) {
 			float prod = lheweights[i].wgt - _MC_weight_pdf_first;
