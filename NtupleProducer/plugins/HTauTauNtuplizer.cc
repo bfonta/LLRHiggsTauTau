@@ -318,9 +318,9 @@ class HTauTauNtuplizer : public edm::EDAnalyzer {
   Float_t _rho;
   Int_t _nup;
 
-  Float_t _MC_weight_QCDscale; // QCD scale uncertainties
-  Float_t _MC_weight_pdf; // PDF uncertainty
-  Float_t _MC_weight_astrong; // Alpha strong uncertainty
+  Float_t _MC_QCDscale; // QCD scale uncertainties
+  Float_t _MC_pdf; // PDF uncertainty
+  Float_t _MC_astrong; // Alpha strong uncertainty
   
   Float_t _MC_weight_PSWeight0;
   Float_t _MC_weight_PSWeight1;
@@ -1222,9 +1222,9 @@ void HTauTauNtuplizer::Initialize(){
   _rho=0;
   _nup=-999;
 
-  _MC_weight_QCDscale = 0.;
-  _MC_weight_pdf = 0.;
-  _MC_weight_astrong = 0.;
+  _MC_QCDscale = 0.;
+  _MC_pdf = 0.;
+  _MC_astrong = 0.;
   
   _MC_weight_PSWeight0=0.;
   _MC_weight_PSWeight1=0.;
@@ -1490,9 +1490,9 @@ void HTauTauNtuplizer::beginJob(){
     myTree->Branch("daughters_genindex",&_daughters_genindex);
     myTree->Branch("MC_weight",&_MC_weight,"MC_weight/F");
 
-	myTree->Branch("MC_weight_QCDscale", &_MC_weight_QCDscale, "MC_weight_QCDscale/F");
-	myTree->Branch("MC_weight_pdf", &_MC_weight_pdf, "MC_weight_pdf/F");
-	myTree->Branch("MC_weight_astrong", &_MC_weight_astrong, "MC_weight_astrong/F");
+	myTree->Branch("MC_QCDscale", &_MC_QCDscale, "MC_QCDscale/F");
+	myTree->Branch("MC_pdf", &_MC_pdf, "MC_pdf/F");
+	myTree->Branch("MC_astrong", &_MC_weigh_astrong, "MC_astrong/F");
 
 	myTree->Branch("MC_weight_PSWeight0",&_MC_weight_PSWeight0,"MC_weight_PSWeight0/F");
     myTree->Branch("MC_weight_PSWeight1",&_MC_weight_PSWeight1,"MC_weight_PSWeight1/F");
@@ -2020,41 +2020,41 @@ void HTauTauNtuplizer::analyze(const edm::Event& event, const edm::EventSetup& e
 	  const auto lheweights = lheeventinfo->weights();
 
 	  // PDF and alpha strong
-	  _MC_weight_pdf = 0.;
-	  unsigned _MC_weight_pdf_first_idx = 0;
-	  unsigned _MC_weight_pdf_last_idx = 0;
+	  _MC_pdf = 0.;
+	  unsigned _MC_pdf_first_idx = 0;
+	  unsigned _MC_pdf_last_idx = 0;
 	  if (uncertScheme.find("MadGraph"))
 		{
-		  if(uncertScheme == "MadGraph45A") _MC_weight_pdf_first_idx = 47;
-		  else if (uncertScheme == "MadGraph45B") _MC_weight_pdf_first_idx = 1611;
-		  else if (uncertScheme == "MadGraph9A") _MC_weight_pdf_first_idx = 10;
-		  else if (uncertScheme == "MadGraph9B") _MC_weight_pdf_first_idx = 573;
-		  _MC_weight_pdf_last_idx = 100;
+		  if(uncertScheme == "MadGraph45A") _MC_pdf_first_idx = 47;
+		  else if (uncertScheme == "MadGraph45B") _MC_pdf_first_idx = 1611;
+		  else if (uncertScheme == "MadGraph9A") _MC_pdf_first_idx = 10;
+		  else if (uncertScheme == "MadGraph9B") _MC_pdf_first_idx = 573;
+		  _MC_pdf_last_idx = 100;
 		  
-		  _MC_weight_astrong = (lheweights[_MC_weight_pdf_first_idx+102].wgt-lheweights[_MC_weight_pdf_first_idx+101].wgt) / 2.;
+		  _MC_astrong = (lheweights[_MC_pdf_first_idx+102].wgt-lheweights[_MC_pdf_first_idx+101].wgt) / 2.;
 		}
 	  else if (uncertScheme.find("Powheg"))
 		{
-		  _MC_weight_pdf_first_idx = 10;
-		  if (uncertScheme == "Powheg9A") _MC_weight_pdf_last_idx = 963;
-		  else if (uncertScheme == "Powheg9B") _MC_weight_pdf_last_idx = 1066;
-		  else if (uncertScheme == "Powheg9C") _MC_weight_pdf_last_idx = 1067;
+		  _MC_pdf_first_idx = 10;
+		  if (uncertScheme == "Powheg9A") _MC_pdf_last_idx = 963;
+		  else if (uncertScheme == "Powheg9B") _MC_pdf_last_idx = 1066;
+		  else if (uncertScheme == "Powheg9C") _MC_pdf_last_idx = 1067;
 
-		  _MC_weight_astrong = 0.; //not present in the LHE file
+		  _MC_astrong = 0.; //not present in the LHE file
 		}
 
 	  if (uncertScheme != "None")
 		{
-		  float _MC_weight_pdf_first = lheweights[_MC_weight_pdf_first_idx].wgt;
-		  for (unsigned i=_MC_weight_pdf_first_idx+1; i<=_MC_weight_pdf_first_idx+_MC_weight_pdf_last_idx; ++i) {
-			float prod = lheweights[i].wgt - _MC_weight_pdf_first;
-			_MC_weight_pdf += prod*prod ;
+		  float _MC_pdf_first = lheweights[_MC_pdf_first_idx].wgt;
+		  for (unsigned i=_MC_pdf_first_idx+1; i<=_MC_pdf_first_idx+_MC_pdf_last_idx; ++i) {
+			float prod = lheweights[i].wgt - _MC_pdf_first;
+			_MC_pdf += prod*prod ;
 		  }
-		  _MC_weight_pdf = std::sqrt(_MC_weight_pdf);
+		  _MC_pdf = std::sqrt(_MC_pdf);
 		}
 	  else {
-		_MC_weight_pdf = -99.;
-		_MC_weight_astrong = -99.;
+		_MC_pdf = -99.;
+		_MC_astrong = -99.;
 	  }
 
 	  // QCD scale
@@ -2067,7 +2067,7 @@ void HTauTauNtuplizer::analyze(const edm::Event& event, const edm::EventSetup& e
 		  float dev_muF2p0_muR2p0 = QCDscale_muF1p0_muR1p0 - lheweights[20].wgt;
 		  float dev_muF0p5_muR1p0 = QCDscale_muF1p0_muR1p0 - lheweights[30].wgt;
 		  float dev_muF0p5_muR0p5 = QCDscale_muF1p0_muR1p0 - lheweights[40].wgt;
-		  _MC_weight_QCDscale = std::max({
+		  _MC_QCDscale = std::max({
 			  std::fabs(dev_muF1p0_muR2p0),
 			  std::fabs(dev_muF1p0_muR0p5),
 			  std::fabs(dev_muF2p0_muR1p0),
@@ -2084,13 +2084,13 @@ void HTauTauNtuplizer::analyze(const edm::Event& event, const edm::EventSetup& e
 		  float dev4 = QCDscale_muF1p0_muR1p0 - lheweights[4].wgt;
 		  float dev5 = QCDscale_muF1p0_muR1p0 - lheweights[6].wgt;
 		  float dev6 = QCDscale_muF1p0_muR1p0 - lheweights[8].wgt;
-		  _MC_weight_QCDscale = std::max({
+		  _MC_QCDscale = std::max({
 			  std::fabs(dev1), std::fabs(dev2), std::fabs(dev3),
 			  std::fabs(dev4), std::fabs(dev5), std::fabs(dev6),
 			}) / QCDscale_muF1p0_muR1p0;
 		}
 	  else {
-		_MC_weight_QCDscale = -99.;
+		_MC_QCDscale = -99.;
 	  }
     }
 
