@@ -2018,9 +2018,49 @@ void HTauTauNtuplizer::analyze(const edm::Event& event, const edm::EventSetup& e
       _nup=lheeventinfo->hepeup().NUP;
 
 	  const auto lheweights = lheeventinfo->weights();
-	  if(uncertScheme == "MadGraph45A")
+
+	  // PDF and alpha strong
+	  _MC_weight_pdf = 0.;
+	  unsigned _MC_weight_pdf_first_idx = 0;
+	  unsigned _MC_weight_pdf_last_idx = 0;
+	  if (uncertScheme.find("MadGraph"))
 		{
-		  float QCDscale_muF1p0_muR1p0 = lheweights[0].wgt;
+		  if(uncertScheme == "MadGraph45A") _MC_weight_pdf_first_idx = 47;
+		  else if (uncertScheme == "MadGraph45B") _MC_weight_pdf_first_idx = 1611;
+		  else if (uncertScheme == "MadGraph9A") _MC_weight_pdf_first_idx = 10;
+		  else if (uncertScheme == "MadGraph9B") _MC_weight_pdf_first_idx = 573;
+		  _MC_weight_pdf_last_idx = 100;
+		  
+		  _MC_weight_astrong = (lheweights[_MC_weight_pdf_first_idx+102].wgt-lheweights[_MC_weight_pdf_first_idx+101].wgt) / 2.;
+		}
+	  else if (uncertScheme.find("Powheg"))
+		{
+		  _MC_weight_pdf_first_idx = 10;
+		  if (uncertScheme == "Powheg9A") _MC_weight_pdf_last_idx = 963;
+		  else if (uncertScheme == "Powheg9B") _MC_weight_pdf_last_idx = 1066;
+		  else if (uncertScheme == "Powheg9C") _MC_weight_pdf_last_idx = 1067;
+
+		  _MC_weight_astrong = 0.; //not present in the LHE file
+		}
+
+	  if (uncertScheme != "None")
+		{
+		  float _MC_weight_pdf_first = lheweights[_MC_weight_pdf_first_idx].wgt;
+		  for (unsigned i=_MC_weight_pdf_first_idx+1; i<=_MC_weight_pdf_first_idx+_MC_weight_pdf_last_idx; ++i) {
+			float prod = lheweights[i].wgt - _MC_weight_pdf_first;
+			_MC_weight_pdf += prod*prod ;
+		  }
+		  _MC_weight_pdf = std::sqrt(_MC_weight_pdf);
+		}
+	  else {
+		_MC_weight_pdf = -99.;
+		_MC_weight_astrong = -99.;
+	  }
+
+	  // QCD scale
+	  float QCDscale_muF1p0_muR1p0 = lheweights[0].wgt;
+	  if (uncertScheme.find("MadGraph45"))
+		{
 		  float dev_muF1p0_muR2p0 = QCDscale_muF1p0_muR1p0 - lheweights[5].wgt;
 		  float dev_muF1p0_muR0p5 = QCDscale_muF1p0_muR1p0 - lheweights[10].wgt;
 		  float dev_muF2p0_muR1p0 = QCDscale_muF1p0_muR1p0 - lheweights[15].wgt;
@@ -2035,198 +2075,23 @@ void HTauTauNtuplizer::analyze(const edm::Event& event, const edm::EventSetup& e
 			  std::fabs(dev_muF0p5_muR1p0),
 			  std::fabs(dev_muF0p5_muR0p5),
 			}) / QCDscale_muF1p0_muR1p0;
-		  
-		  _MC_weight_pdf = 0.;
-		  unsigned _MC_weight_pdf_first_idx = 47;
-		  float _MC_weight_pdf_first = lheweights[_MC_weight_pdf_first_idx].wgt;
-		  for (unsigned i=_MC_weight_pdf_first_idx+1; i<=_MC_weight_pdf_first_idx+100; ++i) {
-			float prod = lheweights[i].wgt - _MC_weight_pdf_first;
-			_MC_weight_pdf += prod*prod ;
-		  }
-		  _MC_weight_pdf = std::sqrt(_MC_weight_pdf);
-		  
-		  _MC_weight_astrong = (lheweights[_MC_weight_pdf_first_idx+102].wgt-lheweights[_MC_weight_pdf_first_idx+101].wgt) / 2.;
-		}
-	  else if(uncertScheme == "MadGraph45B")
+		  		}
+	  else if (uncertScheme.find("MadGraph9") or uncertScheme.find("Powheg9"))
 		{
-		  float QCDscale_muF1p0_muR1p0 = lheweights[0].wgt;
-		  float dev_muF1p0_muR2p0 = QCDscale_muF1p0_muR1p0 - lheweights[5].wgt;
-		  float dev_muF1p0_muR0p5 = QCDscale_muF1p0_muR1p0 - lheweights[10].wgt;
-		  float dev_muF2p0_muR1p0 = QCDscale_muF1p0_muR1p0 - lheweights[15].wgt;
-		  float dev_muF2p0_muR2p0 = QCDscale_muF1p0_muR1p0 - lheweights[20].wgt;
-		  float dev_muF0p5_muR1p0 = QCDscale_muF1p0_muR1p0 - lheweights[30].wgt;
-		  float dev_muF0p5_muR0p5 = QCDscale_muF1p0_muR1p0 - lheweights[40].wgt;
+		  float dev1 = QCDscale_muF1p0_muR1p0 - lheweights[1].wgt;
+		  float dev2 = QCDscale_muF1p0_muR1p0 - lheweights[2].wgt;
+		  float dev3 = QCDscale_muF1p0_muR1p0 - lheweights[3].wgt;
+		  float dev4 = QCDscale_muF1p0_muR1p0 - lheweights[4].wgt;
+		  float dev5 = QCDscale_muF1p0_muR1p0 - lheweights[6].wgt;
+		  float dev6 = QCDscale_muF1p0_muR1p0 - lheweights[8].wgt;
 		  _MC_weight_QCDscale = std::max({
-			  std::fabs(dev_muF1p0_muR2p0),
-			  std::fabs(dev_muF1p0_muR0p5),
-			  std::fabs(dev_muF2p0_muR1p0),
-			  std::fabs(dev_muF2p0_muR2p0),
-			  std::fabs(dev_muF0p5_muR1p0),
-			  std::fabs(dev_muF0p5_muR0p5),
+			  std::fabs(dev1), std::fabs(dev2), std::fabs(dev3),
+			  std::fabs(dev4), std::fabs(dev5), std::fabs(dev6),
 			}) / QCDscale_muF1p0_muR1p0;
-		  
-		  _MC_weight_pdf = 0.;
-		  unsigned _MC_weight_pdf_first_idx = 1611;
-		  float _MC_weight_pdf_first = lheweights[_MC_weight_pdf_first_idx].wgt;
-		  for (unsigned i=_MC_weight_pdf_first_idx+1; i<=_MC_weight_pdf_first_idx+100; ++i) {
-			float prod = lheweights[i].wgt - _MC_weight_pdf_first;
-			_MC_weight_pdf += prod*prod ;
-		  }
-		  _MC_weight_pdf = std::sqrt(_MC_weight_pdf);
-		  
-		  _MC_weight_astrong = (lheweights[_MC_weight_pdf_first_idx+102].wgt-lheweights[_MC_weight_pdf_first_idx+101].wgt) / 2.;
 		}
-	  else if(uncertScheme == "MadGraph9A")
-		{
-		  float QCDscale_muF1p0_muR1p0 = lheweights[0].wgt;
-		  float dev_muF1p0_muR2p0 = QCDscale_muF1p0_muR1p0 - lheweights[1].wgt;
-		  float dev_muF1p0_muR0p5 = QCDscale_muF1p0_muR1p0 - lheweights[2].wgt;
-		  float dev_muF2p0_muR1p0 = QCDscale_muF1p0_muR1p0 - lheweights[3].wgt;
-		  float dev_muF2p0_muR2p0 = QCDscale_muF1p0_muR1p0 - lheweights[4].wgt;
-		  float dev_muF0p5_muR1p0 = QCDscale_muF1p0_muR1p0 - lheweights[6].wgt;
-		  float dev_muF0p5_muR0p5 = QCDscale_muF1p0_muR1p0 - lheweights[8].wgt;
-		  _MC_weight_QCDscale = std::max({
-			  std::fabs(dev_muF1p0_muR2p0),
-			  std::fabs(dev_muF1p0_muR0p5),
-			  std::fabs(dev_muF2p0_muR1p0),
-			  std::fabs(dev_muF2p0_muR2p0),
-			  std::fabs(dev_muF0p5_muR1p0),
-			  std::fabs(dev_muF0p5_muR0p5),
-			}) / QCDscale_muF1p0_muR1p0;
-		  
-		  _MC_weight_pdf = 0.;
-		  unsigned _MC_weight_pdf_first_idx = 10;
-		  float _MC_weight_pdf_first = lheweights[_MC_weight_pdf_first_idx].wgt;
-		  for (unsigned i=_MC_weight_pdf_first_idx+1; i<=_MC_weight_pdf_first_idx+100; ++i) {
-			float prod = lheweights[i].wgt - _MC_weight_pdf_first;
-			_MC_weight_pdf += prod*prod ;
-		  }
-		  _MC_weight_pdf = std::sqrt(_MC_weight_pdf);
-		  
-		  _MC_weight_astrong = (lheweights[_MC_weight_pdf_first_idx+102].wgt-lheweights[_MC_weight_pdf_first_idx+101].wgt) / 2.;
-		}
-	  else if(uncertScheme == "MadGraph9B")
-		{
-		  float QCDscale_muF1p0_muR1p0 = lheweights[0].wgt;
-		  float dev_muF1p0_muR2p0 = QCDscale_muF1p0_muR1p0 - lheweights[1].wgt;
-		  float dev_muF1p0_muR0p5 = QCDscale_muF1p0_muR1p0 - lheweights[2].wgt;
-		  float dev_muF2p0_muR1p0 = QCDscale_muF1p0_muR1p0 - lheweights[3].wgt;
-		  float dev_muF2p0_muR2p0 = QCDscale_muF1p0_muR1p0 - lheweights[4].wgt;
-		  float dev_muF0p5_muR1p0 = QCDscale_muF1p0_muR1p0 - lheweights[6].wgt;
-		  float dev_muF0p5_muR0p5 = QCDscale_muF1p0_muR1p0 - lheweights[8].wgt;
-		  _MC_weight_QCDscale = std::max({
-			  std::fabs(dev_muF1p0_muR2p0),
-			  std::fabs(dev_muF1p0_muR0p5),
-			  std::fabs(dev_muF2p0_muR1p0),
-			  std::fabs(dev_muF2p0_muR2p0),
-			  std::fabs(dev_muF0p5_muR1p0),
-			  std::fabs(dev_muF0p5_muR0p5),
-			}) / QCDscale_muF1p0_muR1p0;
-		  
-		  _MC_weight_pdf = 0.;
-		  unsigned _MC_weight_pdf_first_idx = 573;
-		  float _MC_weight_pdf_first = lheweights[_MC_weight_pdf_first_idx].wgt;
-		  for (unsigned i=_MC_weight_pdf_first_idx+1; i<=_MC_weight_pdf_first_idx+100; ++i) {
-			float prod = lheweights[i].wgt - _MC_weight_pdf_first;
-			_MC_weight_pdf += prod*prod ;
-		  }
-		  _MC_weight_pdf = std::sqrt(_MC_weight_pdf);
-		  
-		  _MC_weight_astrong = (lheweights[_MC_weight_pdf_first_idx+102].wgt-lheweights[_MC_weight_pdf_first_idx+101].wgt) / 2.;
-		}
-	  else if(uncertScheme == "Powheg9A")
-		{
-		  float QCDscale_muF1p0_muR1p0 = lheweights[0].wgt;
-		  float dev_muF2p0_muR1p0 = QCDscale_muF1p0_muR1p0 - lheweights[1].wgt;
-		  float dev_muF0p5_muR1p0 = QCDscale_muF1p0_muR1p0 - lheweights[2].wgt;
-		  float dev_muF1p0_muR2p0 = QCDscale_muF1p0_muR1p0 - lheweights[3].wgt;
-		  float dev_muF2p0_muR2p0 = QCDscale_muF1p0_muR1p0 - lheweights[4].wgt;
-		  float dev_muF1p0_muR0p5 = QCDscale_muF1p0_muR1p0 - lheweights[6].wgt;
-		  float dev_muF0p5_muR0p5 = QCDscale_muF1p0_muR1p0 - lheweights[8].wgt;
-		  _MC_weight_QCDscale = std::max({
-			  std::fabs(dev_muF2p0_muR1p0),
-			  std::fabs(dev_muF0p5_muR1p0),
-			  std::fabs(dev_muF1p0_muR2p0),
-			  std::fabs(dev_muF2p0_muR2p0),
-			  std::fabs(dev_muF1p0_muR0p5),
-			  std::fabs(dev_muF0p5_muR0p5),
-			}) / QCDscale_muF1p0_muR1p0;
-
-		  _MC_weight_pdf = 0.;
-		  unsigned _MC_weight_pdf_first_idx = 10;
-		  float _MC_weight_pdf_first = lheweights[_MC_weight_pdf_first_idx].wgt;
-		  for (unsigned i=_MC_weight_pdf_first_idx+1; i<=_MC_weight_pdf_first_idx+963; ++i) {
-			float prod = lheweights[i].wgt - _MC_weight_pdf_first;
-			_MC_weight_pdf += prod*prod ;
-		  }
-		  _MC_weight_pdf = std::sqrt(_MC_weight_pdf);
-
-		  _MC_weight_astrong = 0.; //not present in the LHE file
-		}
-	  else if(uncertScheme == "Powheg9B")
-		{
-		  float QCDscale_muF1p0_muR1p0 = lheweights[0].wgt;
-		  float dev_muF2p0_muR1p0 = QCDscale_muF1p0_muR1p0 - lheweights[1].wgt;
-		  float dev_muF0p5_muR1p0 = QCDscale_muF1p0_muR1p0 - lheweights[2].wgt;
-		  float dev_muF1p0_muR2p0 = QCDscale_muF1p0_muR1p0 - lheweights[3].wgt;
-		  float dev_muF2p0_muR2p0 = QCDscale_muF1p0_muR1p0 - lheweights[4].wgt;
-		  float dev_muF1p0_muR0p5 = QCDscale_muF1p0_muR1p0 - lheweights[6].wgt;
-		  float dev_muF0p5_muR0p5 = QCDscale_muF1p0_muR1p0 - lheweights[8].wgt;
-		  _MC_weight_QCDscale = std::max({
-			  std::fabs(dev_muF2p0_muR1p0),
-			  std::fabs(dev_muF0p5_muR1p0),
-			  std::fabs(dev_muF1p0_muR2p0),
-			  std::fabs(dev_muF2p0_muR2p0),
-			  std::fabs(dev_muF1p0_muR0p5),
-			  std::fabs(dev_muF0p5_muR0p5),
-			}) / QCDscale_muF1p0_muR1p0;
-
-		  _MC_weight_pdf = 0.;
-		  unsigned _MC_weight_pdf_first_idx = 10;
-		  float _MC_weight_pdf_first = lheweights[_MC_weight_pdf_first_idx].wgt;
-		  for (unsigned i=_MC_weight_pdf_first_idx+1; i<=_MC_weight_pdf_first_idx+1066; ++i) {
-			float prod = lheweights[i].wgt - _MC_weight_pdf_first;
-			_MC_weight_pdf += prod*prod ;
-		  }
-		  _MC_weight_pdf = std::sqrt(_MC_weight_pdf);
-
-		  _MC_weight_astrong = 0.; //not present in the LHE file
-		}
-	  else if(uncertScheme == "Powheg9C")
-		{
-		  float QCDscale_muF1p0_muR1p0 = lheweights[0].wgt;
-		  float dev_muF2p0_muR1p0 = QCDscale_muF1p0_muR1p0 - lheweights[1].wgt;
-		  float dev_muF0p5_muR1p0 = QCDscale_muF1p0_muR1p0 - lheweights[2].wgt;
-		  float dev_muF1p0_muR2p0 = QCDscale_muF1p0_muR1p0 - lheweights[3].wgt;
-		  float dev_muF2p0_muR2p0 = QCDscale_muF1p0_muR1p0 - lheweights[4].wgt;
-		  float dev_muF1p0_muR0p5 = QCDscale_muF1p0_muR1p0 - lheweights[6].wgt;
-		  float dev_muF0p5_muR0p5 = QCDscale_muF1p0_muR1p0 - lheweights[8].wgt;
-		  _MC_weight_QCDscale = std::max({
-			  std::fabs(dev_muF2p0_muR1p0),
-			  std::fabs(dev_muF0p5_muR1p0),
-			  std::fabs(dev_muF1p0_muR2p0),
-			  std::fabs(dev_muF2p0_muR2p0),
-			  std::fabs(dev_muF1p0_muR0p5),
-			  std::fabs(dev_muF0p5_muR0p5),
-			}) / QCDscale_muF1p0_muR1p0;
-
-		  _MC_weight_pdf = 0.;
-		  unsigned _MC_weight_pdf_first_idx = 10;
-		  float _MC_weight_pdf_first = lheweights[_MC_weight_pdf_first_idx].wgt;
-		  for (unsigned i=_MC_weight_pdf_first_idx+1; i<=_MC_weight_pdf_first_idx+1067; ++i) {
-			float prod = lheweights[i].wgt - _MC_weight_pdf_first;
-			_MC_weight_pdf += prod*prod ;
-		  }
-		  _MC_weight_pdf = std::sqrt(_MC_weight_pdf);
-
-		  _MC_weight_astrong = 0.; //not present in the LHE file
-		}
-	  else if(uncertScheme == "None")
-		{
-		  _MC_weight_QCDscale = -99.; 
-		  _MC_weight_pdf = -99.;
-		  _MC_weight_astrong = -99.;
-		}
+	  else {
+		_MC_weight_QCDscale = -99.;
+	  }
     }
 
   }

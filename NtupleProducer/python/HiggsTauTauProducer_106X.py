@@ -21,8 +21,10 @@ print 'Year+Period:', str(YEAR)+PERIOD
 assert PERIOD in ("", "postVFP")
 try: SCHEME
 except:
-    SCHEME = "MadGraph45"
+    SCHEME = "None"
 print 'Uncertainty scheme:', SCHEME
+assert SCHEME in ("None", "MadGraph45A", "MadGraph45B", "MadGraph9A", "MadGraph9B",
+                  "Powheg9A", "Powheg9B", "Powheg9C")
 try: doCPVariables
 except NameError:
     doCPVariables=True       
@@ -250,8 +252,8 @@ if YEAR == 2018:
 
 from RecoEgamma.EgammaTools.EgammaPostRecoTools import setupEgammaPostRecoSeq
 setupEgammaPostRecoSeq(process,
-                       era=EgammaPostRecoSeq_ERA)    
-		       
+                       era=EgammaPostRecoSeq_ERA)
+
 process.softElectrons = cms.EDProducer("EleFiller",
    src    = cms.InputTag("slimmedElectrons"),
    rhoCollection = cms.InputTag("fixedGridRhoFastjetAll",""),
