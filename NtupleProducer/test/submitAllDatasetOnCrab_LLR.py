@@ -131,7 +131,6 @@ with open(datasetsFile) as fIn:
 os.system ("voms-proxy-init -voms cms")
 
 for name in PROCESS: crabJobsFolder + "_" + name
-print crabJobsFolder
 os.system ("mkdir %s" % crabJobsFolder)
 
 counter = 1 # appended to the request name to avoid overlaps between datasets with same name e.g. /DoubleEG/Run2015B-17Jul2015-v1/MINIAOD vs /DoubleEG/Run2015B-PromptReco-v1/MINIAOD
@@ -157,7 +156,6 @@ site_white_list = [
 from collections import OrderedDict
 crab_whitelistarg = OrderedDict()
 crab_whitelistarg["Site.whitelist"] = site_white_list
-print dtsetToLaunch
 for dtset in dtsetToLaunch:
 
     ignoreLoc = False
