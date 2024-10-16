@@ -1492,7 +1492,7 @@ void HTauTauNtuplizer::beginJob(){
 
 	myTree->Branch("MC_QCDscale", &_MC_QCDscale, "MC_QCDscale/F");
 	myTree->Branch("MC_pdf", &_MC_pdf, "MC_pdf/F");
-	myTree->Branch("MC_astrong", &_MC_weigh_astrong, "MC_astrong/F");
+	myTree->Branch("MC_astrong", &_MC_astrong, "MC_astrong/F");
 
 	myTree->Branch("MC_weight_PSWeight0",&_MC_weight_PSWeight0,"MC_weight_PSWeight0/F");
     myTree->Branch("MC_weight_PSWeight1",&_MC_weight_PSWeight1,"MC_weight_PSWeight1/F");
