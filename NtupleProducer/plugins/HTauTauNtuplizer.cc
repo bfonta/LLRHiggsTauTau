@@ -2023,17 +2023,17 @@ void HTauTauNtuplizer::analyze(const edm::Event& event, const edm::EventSetup& e
 	  _MC_pdf = 0.;
 	  unsigned _MC_pdf_first_idx = 0;
 	  unsigned _MC_pdf_last_idx = 0;
-	  if (uncertScheme.find("MadGraph"))
+	  if (uncertScheme.find("MadGraph") != std::string::npos)
 		{
 		  if(uncertScheme == "MadGraph45A") _MC_pdf_first_idx = 47;
 		  else if (uncertScheme == "MadGraph45B") _MC_pdf_first_idx = 1611;
 		  else if (uncertScheme == "MadGraph9A") _MC_pdf_first_idx = 10;
 		  else if (uncertScheme == "MadGraph9B") _MC_pdf_first_idx = 573;
 		  _MC_pdf_last_idx = 100;
-		  
+
 		  _MC_astrong = (lheweights[_MC_pdf_first_idx+102].wgt-lheweights[_MC_pdf_first_idx+101].wgt) / 2.;
 		}
-	  else if (uncertScheme.find("Powheg"))
+	  else if (uncertScheme.find("Powheg") != std::string::npos)
 		{
 		  _MC_pdf_first_idx = 10;
 		  if (uncertScheme == "Powheg9A") _MC_pdf_last_idx = 963;
@@ -2059,7 +2059,7 @@ void HTauTauNtuplizer::analyze(const edm::Event& event, const edm::EventSetup& e
 
 	  // QCD scale
 	  float QCDscale_muF1p0_muR1p0 = lheweights[0].wgt;
-	  if (uncertScheme.find("MadGraph45"))
+	  if (uncertScheme.find("MadGraph45") != std::string::npos)
 		{
 		  float dev_muF1p0_muR2p0 = QCDscale_muF1p0_muR1p0 - lheweights[5].wgt;
 		  float dev_muF1p0_muR0p5 = QCDscale_muF1p0_muR1p0 - lheweights[10].wgt;
@@ -2076,7 +2076,8 @@ void HTauTauNtuplizer::analyze(const edm::Event& event, const edm::EventSetup& e
 			  std::fabs(dev_muF0p5_muR0p5),
 			}) / QCDscale_muF1p0_muR1p0;
 		  		}
-	  else if (uncertScheme.find("MadGraph9") or uncertScheme.find("Powheg9"))
+	  else if (uncertScheme.find("MadGraph9") != std::string::npos or
+			   uncertScheme.find("Powheg9") != std::string::npos)
 		{
 		  float dev1 = QCDscale_muF1p0_muR1p0 - lheweights[1].wgt;
 		  float dev2 = QCDscale_muF1p0_muR1p0 - lheweights[2].wgt;
@@ -2092,6 +2093,12 @@ void HTauTauNtuplizer::analyze(const edm::Event& event, const edm::EventSetup& e
 	  else {
 		_MC_QCDscale = -99.;
 	  }
+	  std::cout << "UNCERTAINTIES: " << uncertScheme << std::endl;
+	  std::cout << _MC_pdf_last_idx << " " << _MC_pdf_first_idx << " " << lheweights[_MC_pdf_first_idx].wgt << " " << lheweights[_MC_pdf_first_idx+1].wgt << std::endl;
+	  std::cout << _MC_weight << " " << lheweights[_MC_pdf_first_idx].wgt << std::endl;
+	  std::cout << _MC_QCDscale << std::endl;
+	  std::cout << _MC_pdf << std::endl;
+	  std::cout << _MC_astrong << std::endl;
     }
 
   }
