@@ -23,8 +23,7 @@ try: SCHEME
 except:
     SCHEME = "None"
 print 'Uncertainty scheme:', SCHEME
-assert SCHEME in ("None", "MadGraph45A", "MadGraph45B", "MadGraph9A", "MadGraph9B",
-                  "Powheg9A", "Powheg9B", "Powheg9C")
+assert SCHEME in ("None", "MadGraph45A", "MadGraph45B", "MadGraph9A", "MadGraph9B", "Powheg9")
 try: doCPVariables
 except NameError:
     doCPVariables=True       

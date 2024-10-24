@@ -318,11 +318,7 @@ class HTauTauNtuplizer : public edm::EDAnalyzer {
   Float_t _rho;
   Int_t _nup;
 
-  Float_t _MC_QCDscale_perevent; // QCD scale uncertainty computed per-event
-  Float_t _MC_pdf_perevent;      // PDF uncertainty computed per-event
-  Float_t _MC_astrong_perevent;  // Alpha strong uncertainty computed per-event
-
-  std::vector<float> _MC_QCDscale = std::vector<float>(6, 0.); // QCD scale uncertainties computed per-histogram
+  std::vector<float> _MC_QCDscale = std::vector<float>(7, 0.); // QCD scale uncertainties computed per-histogram
   std::vector<float> _MC_pdf = std::vector<float>(101, 0.);    // PDF uncertainties computed per-histogram
   std::vector<float> _MC_astrong = std::vector<float>(2, 0.);  // Alpha strong uncertainties computed per-histogram
   
@@ -1224,10 +1220,6 @@ void HTauTauNtuplizer::Initialize(){
   //_PUReweight=0.; //FRA January2019
   _rho=0;
   _nup=-999;
-
-  _MC_QCDscale_perevent = 0.;
-  _MC_pdf_perevent = 0.;
-  _MC_astrong_perevent = 0.;
   
   _MC_weight_PSWeight0=0.;
   _MC_weight_PSWeight1=0.;
@@ -1493,16 +1485,13 @@ void HTauTauNtuplizer::beginJob(){
     myTree->Branch("daughters_genindex",&_daughters_genindex);
     myTree->Branch("MC_weight",&_MC_weight,"MC_weight/F");
 
-	myTree->Branch("MC_QCDscale_perevent", &_MC_QCDscale_perevent, "MC_QCDscale_perevent/F");
-	myTree->Branch("MC_pdf_perevent", &_MC_pdf_perevent, "MC_pdf_perevent/F");
-	myTree->Branch("MC_astrong_perevent", &_MC_astrong_perevent, "MC_astrong_perevent/F");
-
 	myTree->Branch("MC_QCDscale_0", &_MC_QCDscale[0], "MC_QCDscale_0/F");
 	myTree->Branch("MC_QCDscale_1", &_MC_QCDscale[1], "MC_QCDscale_1/F");
 	myTree->Branch("MC_QCDscale_2", &_MC_QCDscale[2], "MC_QCDscale_2/F");
 	myTree->Branch("MC_QCDscale_3", &_MC_QCDscale[3], "MC_QCDscale_3/F");
 	myTree->Branch("MC_QCDscale_4", &_MC_QCDscale[4], "MC_QCDscale_4/F");
 	myTree->Branch("MC_QCDscale_5", &_MC_QCDscale[5], "MC_QCDscale_5/F");
+	myTree->Branch("MC_QCDscale_6", &_MC_QCDscale[6], "MC_QCDscale_6/F");
 	myTree->Branch("MC_pdf_0", &_MC_pdf[0], "MC_pdf_0/F");
 	myTree->Branch("MC_pdf_1", &_MC_pdf[1], "MC_pdf_1/F");
 	myTree->Branch("MC_pdf_2", &_MC_pdf[2], "MC_pdf_2/F");
@@ -2150,27 +2139,11 @@ void HTauTauNtuplizer::analyze(const edm::Event& event, const edm::EventSetup& e
 		{
 		  throw cms::Exception("InvalidOption") << "uncertainty scheme option is not valid";
 		}
-	  
-	  if (uncertScheme != "None")
-		{
-		  _MC_pdf_perevent = 0.;
-		  float _MC_pdf_first = lheweights[_MC_pdf_first_idx].wgt;
-		  for (unsigned i=_MC_pdf_first_idx+1; i<=_MC_pdf_first_idx+_MC_pdf_last_idx; ++i) {
-			float prod = lheweights[i].wgt - _MC_pdf_first;
-			_MC_pdf_perevent += prod*prod ;
-		  }
-		  _MC_pdf_perevent = std::sqrt(_MC_pdf_perevent);
-
-		  _MC_astrong_perevent = (lheweights[_MC_pdf_first_idx+_MC_pdf_last_idx+2].wgt-lheweights[_MC_pdf_first_idx+_MC_pdf_last_idx+1].wgt) / 2.;
-		}
-	  else {
-		_MC_pdf_perevent = -99.f;
-		_MC_astrong_perevent = -99.f;
-	  }
 
 	  for (unsigned pdf_idx = _MC_pdf_first_idx; pdf_idx <= _MC_pdf_first_idx+_MC_pdf_last_idx; ++pdf_idx) {
 		_MC_pdf[pdf_idx-_MC_pdf_first_idx] = lheweights[pdf_idx].wgt;
 	  }
+
 	  if (uncertScheme != "None")
 		{
 		  _MC_astrong[0] = lheweights[_MC_pdf_first_idx+_MC_pdf_last_idx+1].wgt;
@@ -2182,51 +2155,26 @@ void HTauTauNtuplizer::analyze(const edm::Event& event, const edm::EventSetup& e
 	  }
 	  
 	  // QCD scale
-	  float QCDscale_muF1p0_muR1p0 = lheweights[0].wgt;
 	  if (uncertScheme.find("MadGraph45") != std::string::npos)
 		{
-		  _MC_QCDscale[0] = lheweights[5].wgt;
-		  _MC_QCDscale[1] = lheweights[10].wgt;
-		  _MC_QCDscale[2] = lheweights[15].wgt;
-		  _MC_QCDscale[3] = lheweights[20].wgt;
-		  _MC_QCDscale[4] = lheweights[30].wgt;
-		  _MC_QCDscale[5] = lheweights[40].wgt;
-
-		  float dev_muF1p0_muR2p0 = QCDscale_muF1p0_muR1p0 - lheweights[5].wgt;
-		  float dev_muF1p0_muR0p5 = QCDscale_muF1p0_muR1p0 - lheweights[10].wgt;
-		  float dev_muF2p0_muR1p0 = QCDscale_muF1p0_muR1p0 - lheweights[15].wgt;
-		  float dev_muF2p0_muR2p0 = QCDscale_muF1p0_muR1p0 - lheweights[20].wgt;
-		  float dev_muF0p5_muR1p0 = QCDscale_muF1p0_muR1p0 - lheweights[30].wgt;
-		  float dev_muF0p5_muR0p5 = QCDscale_muF1p0_muR1p0 - lheweights[40].wgt;
-		  _MC_QCDscale_perevent = std::max({
-			  std::fabs(dev_muF1p0_muR2p0),
-			  std::fabs(dev_muF1p0_muR0p5),
-			  std::fabs(dev_muF2p0_muR1p0),
-			  std::fabs(dev_muF2p0_muR2p0),
-			  std::fabs(dev_muF0p5_muR1p0),
-			  std::fabs(dev_muF0p5_muR0p5),
-			}) / QCDscale_muF1p0_muR1p0;
-		  		}
+		  _MC_QCDscale[0] = lheweights[0].wgt; // muF1p0_muR1p0
+		  _MC_QCDscale[1] = lheweights[5].wgt;
+		  _MC_QCDscale[2] = lheweights[10].wgt;
+		  _MC_QCDscale[3] = lheweights[15].wgt;
+		  _MC_QCDscale[4] = lheweights[20].wgt;
+		  _MC_QCDscale[5] = lheweights[30].wgt;
+		  _MC_QCDscale[6] = lheweights[40].wgt;
+		}
 	  else if (uncertScheme.find("MadGraph9") != std::string::npos or
 			   uncertScheme.find("Powheg9") != std::string::npos)
 		{
-		  _MC_QCDscale[0] = lheweights[1].wgt;
-		  _MC_QCDscale[1] = lheweights[2].wgt;
-		  _MC_QCDscale[2] = lheweights[3].wgt;
-		  _MC_QCDscale[3] = lheweights[4].wgt;
-		  _MC_QCDscale[4] = lheweights[6].wgt;
-		  _MC_QCDscale[5] = lheweights[8].wgt;
-		  
-		  float dev1 = QCDscale_muF1p0_muR1p0 - lheweights[1].wgt;
-		  float dev2 = QCDscale_muF1p0_muR1p0 - lheweights[2].wgt;
-		  float dev3 = QCDscale_muF1p0_muR1p0 - lheweights[3].wgt;
-		  float dev4 = QCDscale_muF1p0_muR1p0 - lheweights[4].wgt;
-		  float dev5 = QCDscale_muF1p0_muR1p0 - lheweights[6].wgt;
-		  float dev6 = QCDscale_muF1p0_muR1p0 - lheweights[8].wgt;
-		  _MC_QCDscale_perevent = std::max({
-			  std::fabs(dev1), std::fabs(dev2), std::fabs(dev3),
-			  std::fabs(dev4), std::fabs(dev5), std::fabs(dev6),
-			}) / QCDscale_muF1p0_muR1p0;
+		  _MC_QCDscale[0] = lheweights[0].wgt; // muF1p0_muR1p0
+		  _MC_QCDscale[1] = lheweights[1].wgt;
+		  _MC_QCDscale[2] = lheweights[2].wgt;
+		  _MC_QCDscale[3] = lheweights[3].wgt;
+		  _MC_QCDscale[4] = lheweights[4].wgt;
+		  _MC_QCDscale[5] = lheweights[6].wgt;
+		  _MC_QCDscale[6] = lheweights[8].wgt;
 		}
 	  else {
 		_MC_QCDscale[0] = -99.f;
@@ -2235,28 +2183,11 @@ void HTauTauNtuplizer::analyze(const edm::Event& event, const edm::EventSetup& e
 		_MC_QCDscale[3] = -99.f;
 		_MC_QCDscale[4] = -99.f;
 		_MC_QCDscale[5] = -99.f;
-
-		_MC_QCDscale_perevent = -99.f;
+		_MC_QCDscale[6] = -99.f;
 	  }
 	}
 
   }
-
-  /*if (theUseNoHFPFMet) event.getByLabel("slimmedMETsNoHF",metHandle);
-  else event.getByLabel("slimmedMETs",metHandle);
-  
-  if(theisMC){
-    edm::Handle<LHEEventProduct> lheeventinfo;
-    event.getByLabel("LHEEventProduct",lheeventinfo);
-    if (lheeventinfo.isValid()) {
-      _nup=lheeventinfo->hepeup().NUP;
-    }
-    edm::Handle<GenEventInfoProduct> genEvt;
-    event.getByLabel("generator",genEvt);
-    _aMCatNLOweight=genEvt->weight();
-    _MC_weight = _aMCatNLOweight; // duplicated
-  }*/
-
 
   const edm::View<pat::CompositeCandidate>* cands = candHandle.product();
   const edm::View<reco::Candidate>* daus = dauHandle.product();
